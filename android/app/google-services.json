@@ -1,0 +1,159 @@
+{
+  "project_info": {
+    "project_number": "839461485346",
+    "firebase_url": "https://brightblu-jolt-lite-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "brightblu-jolt-lite",
+    "storage_bucket": "brightblu-jolt-lite.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839461485346:android:be4011fe8912f4ec21437b",
+        "android_client_info": {
+          "package_name": "com.brightblu.bb_factory_test_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "839461485346-qhqhb26a8kdmsa1vsd0nli5icpv3sdbt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDp6EeXTkweMuuOGzzIOhzUSJqzKaw_8ko"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839461485346-osl3fekdqinv2afp9o357fegc4thktb4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "839461485346-25mgau89jemq1edrlkbbqq3oi7t65hdb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bbjoltlite"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839461485346:android:2c39109d1ede911521437b",
+        "android_client_info": {
+          "package_name": "com.brightblu.bbjoltlite"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "839461485346-2l8q6tgicvcn5pfjng5oaqc1ts09uqc9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brightblu.bbjoltlite",
+            "certificate_hash": "9dd39fbf99c2c0a64fb980918b4acd13cf9c9ff4"
+          }
+        },
+        {
+          "client_id": "839461485346-5d1g5jcqfumjm494p272stf9f5f8cbsp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brightblu.bbjoltlite",
+            "certificate_hash": "3bbac31edd6f84bbe858227cb232aabf370a6c82"
+          }
+        },
+        {
+          "client_id": "839461485346-o00ttop2npv0j2mv6r2csvj54qbp93ns.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brightblu.bbjoltlite",
+            "certificate_hash": "17a2918d792b5725c689e2b7a74208c616f73edf"
+          }
+        },
+        {
+          "client_id": "839461485346-rp0p7fp9p0pl2t9mruemp5c8i3nmj2h2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brightblu.bbjoltlite",
+            "certificate_hash": "9199c983fdc77bbb5af77308288b9c4cc30cfd89"
+          }
+        },
+        {
+          "client_id": "839461485346-v0o7em5eoe27k1hbuer0lpvh1ah0rr83.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brightblu.bbjoltlite",
+            "certificate_hash": "bb794e6d50e160d724566e15adf38526f161082f"
+          }
+        },
+        {
+          "client_id": "839461485346-qhqhb26a8kdmsa1vsd0nli5icpv3sdbt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDp6EeXTkweMuuOGzzIOhzUSJqzKaw_8ko"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839461485346-osl3fekdqinv2afp9o357fegc4thktb4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "839461485346-25mgau89jemq1edrlkbbqq3oi7t65hdb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bbjoltlite"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839461485346:android:d2f75257df5e7d9c21437b",
+        "android_client_info": {
+          "package_name": "com.brightblu.joltControlTest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "839461485346-qhqhb26a8kdmsa1vsd0nli5icpv3sdbt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDp6EeXTkweMuuOGzzIOhzUSJqzKaw_8ko"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839461485346-osl3fekdqinv2afp9o357fegc4thktb4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "839461485346-25mgau89jemq1edrlkbbqq3oi7t65hdb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bbjoltlite"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
