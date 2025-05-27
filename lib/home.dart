@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   void _saveData() async {
     String engineerName = _engineerNameController.text.trim();
     String dateTime = _dateTimeController.text.trim();
-SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     if (engineerName.isNotEmpty && dateTime.isNotEmpty) {
       await _firestore.collection('test_details').add({
         'engineer_name': engineerName,
@@ -39,7 +39,8 @@ SharedPreferences prefs = await SharedPreferences.getInstance();
       _engineerNameController.clear();
 
       _dateTimeController.clear();
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MainWifiScreen()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => MainWifiScreen()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),
@@ -53,7 +54,7 @@ SharedPreferences prefs = await SharedPreferences.getInstance();
     final controller = Get.put(Controller()..bluetoothAdapterState());
 
     return Scaffold(
-     appBar: AppHeader(
+      appBar: AppHeader(
         actions: [
           Obx(
             () => IconButton(

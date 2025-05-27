@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:bb_factory_test_app/bluetooth_test_screen.dart';
 import 'package:bb_factory_test_app/models/charger_realitime_model.dart';
 import 'package:bb_factory_test_app/repository/charger_ble_repository.dart';
 import 'package:bb_factory_test_app/repository/charger_firebase_repository.dart';
@@ -50,6 +51,7 @@ class Controller extends GetxController {
   final repository = Repository();
 // Timer t = Timer(Duration(seconds: 0));
   final connectionSwitch = (0).obs;
+
   /// Instance for accesing ble methods
   final bleRepository = ChargerBLERepository();
 
@@ -127,7 +129,6 @@ class Controller extends GetxController {
           chargerModel.value.status == ChargerStatus.UNAVAILABLE ||
           chargerModel.value.status == ChargerStatus.ERROR ||
           chargerModel.value.status == ChargerStatus.PREPARING);
-
 
   /// Provides if charger wifi connection status is [ConnectionStatus.ONLINE] or [ConnectionStatus.OFFLINE]
   ConnectionStatus get chargerWifiConnectionStatus =>
@@ -308,7 +309,6 @@ class Controller extends GetxController {
       Fluttertoast.showToast(msg: "Failed to disconnect the charger");
     }
     await _cancelAllStreamSubsciptions();
-    Get.back();
     Fluttertoast.showToast(msg: "Disconnection successful");
   }
 
@@ -392,8 +392,7 @@ class Controller extends GetxController {
       await getStatusNotification();
       await getFreeMode();
 
-
-      // listenToBLEChargerUpdates();
+      listenToBLEChargerUpdates();
     }
     state.value = StoreState.SUCCESS;
   }
@@ -537,6 +536,7 @@ class Controller extends GetxController {
     debugPrint("----- resp[1] ----- ${resp[1]}");
     chargerModel.value = chargerModel.value.copyWith(newChargerId: resp[1]);
   }
+
   // Stream to expose BLE logs
   Stream<String> get bleLogStream => repository.bleLogStream;
 
@@ -545,7 +545,7 @@ class Controller extends GetxController {
     repository.sendEnableLogsCommand(bluetoothModel, start);
   }
   // Future<List> getLogs(bool start) async {
-    
+
   //   List resp =
   //       await repository.sendEnableLogsCommand(bluetoothModel.value, start);
 
@@ -596,7 +596,6 @@ class Controller extends GetxController {
 
 // Stream<List<String>> get bleLogStream => stream;
 
-
   Future<void> connectCharger({BluetoothDevice? device}) async {
     if (isBleOn) {
       state.value = StoreState.LOADING;
@@ -612,7 +611,7 @@ class Controller extends GetxController {
       bluetoothModel.value = model;
       await bootCharger();
       //TODO:
-      // Get.to(ChargerScreen());
+      Get.to(BluetoothTest(chargerId: device!.advName.toString()));
 
       state.value = StoreState.SUCCESS;
       return;
@@ -760,7 +759,7 @@ class Controller extends GetxController {
       password: password,
       model: bluetoothModel.value,
     );
-      
+
     print("BLE Model : ${bluetoothModel.value.bluetoothDevice}");
     if (resp == null) {
       debugPrint(
@@ -1351,18 +1350,30 @@ class Controller extends GetxController {
           margin: pw.EdgeInsets.all(32),
           build: (pw.Context context) {
             return [
-              pw.Header(
-                level: 0,
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text(
-                        'The Fern Leo Beach Resort, Madhavpur Commissioning Report.pdf'),
-                    pw.Text('BRIGHTBLU INDIA PRIVATE LIMITED'),
-                  ],
-                ),
+              // Header
+              pw.Container(
+                padding: pw.EdgeInsets.only(bottom: 20),
+                alignment: pw.Alignment.center,
+                child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    children: [
+                      pw.Text(
+                        'BRIGHTBLU INDIA PRIVATE LIMITED',
+                        style: pw.TextStyle(
+                          fontSize: 18,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.SizedBox(height: 5),
+                      pw.Text(
+                        'Test Report For Charger',
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                        ),
+                      ),
+                    ]),
               ),
-              pw.Divider(),
+              pw.Divider(thickness: 2),
               pw.Header(level: 1, text: 'Customer Details'),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -1450,64 +1461,44 @@ class Controller extends GetxController {
     }
   }
 
-
-   Future<void> generateTestPdf(
-      {
-
-      required String chargerId,
-      
-      required String voltage,
-      required String power,
-
-      required String energy,
-      required String current,
-      required String engineername,
-
-      required String dateTime,
-      // required String modelName,
-      // required String dateOfManufacture,
-      // required String warrantyDate,
-      // required String productSerialNo,
-      // required String network,
-      // required String city,
-      // required String state,
-      // required String simProvider,
-      // required String cpoChargerId,
-      // required String notOkTicketId,
-      // required String communicationControllerFirmware,
-      // required String chargerLocation,
-      // required String chargerFirmwareVersion,
-      // required String mcbMakeAndRating,
-      // required String typeOfEarthing,
-      // required String cableMakeTypeAndSize,
-      // required String mandatoryPhoto,
-      // required String rNVolt,
-      // required String yNVolt,
-      // required String rYVolt,
-      // required String yBVolt,
-      // required String bNVolt,
-      // required String nEVolt,
-      // required String bRVolt,
-      // required String pEVolt,
-      // required String voltageFluctuation,
-      // required String ledIndicationStatus,
-      // required String customerOrRepresentativeName,
-      // required String contactPersonNumber,
-      // required String servicePartnerName,
-      // required String servicePartnerContactNumber,
-      // required String servicePartnerEmailId,
-      // required String servicePartnerDesignation,
-      // required String commisioningDoneBy,
-      // required String commisioningDoneByContactNumber,
-      // 
-}
-      ) async {
+  Future<void> generateTestPdf({
+    required String chargerId,
+    // BT Measurements
+    required String btVoltage,
+    required String btPower,
+    required String btEnergy,
+    required String btCurrent,
+    // WiFi Measurements
+    required String wifiVoltage,
+    required String wifiPower,
+    required String wifiEnergy,
+    required String wifiCurrent,
+    // RFID Measurements - RESTORED
+    required String rfid1Voltage,
+    required String rfid1Power,
+    required String rfid1Energy,
+    required String rfid1Current,
+    required String rfid2Voltage,
+    required String rfid2Power,
+    required String rfid2Energy,
+    required String rfid2Current,
+    // General Info
+    required String engineername,
+    required String dateTime,
+    required String firmwareVersion,
+    required String chargerType,
+    // Test Times
+    required String bluetoothTestTime,
+    required String wifiTestTime,
+    required String rfidTestTime1, // RESTORED
+    required String rfidTestTime2, // RESTORED
+    // Test Results - REMOVING bluetoothTestResults and wifiTestResults as they are no longer used
+    // required Map<String, dynamic> bluetoothTestResults,
+    // required Map<String, dynamic> wifiTestResults,
+    required Map<String, dynamic> rfidTestResults,
+  }) async {
     try {
       final pdf = pw.Document();
-
-      // final fontData =
-      //     await rootBundle.load('assets/fonts/WorkSansRomanSemiBold.ttf');
-      // final ttf = pw.Font.ttf(fontData);
 
       pdf.addPage(
         pw.MultiPage(
@@ -1515,86 +1506,315 @@ class Controller extends GetxController {
           margin: pw.EdgeInsets.all(32),
           build: (pw.Context context) {
             return [
-              pw.Header(
-                level: 0,
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              // Header
+              pw.Container(
+                padding: pw.EdgeInsets.only(bottom: 20),
+                alignment: pw.Alignment.center,
+                child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    children: [
+                      pw.Text(
+                        'BRIGHTBLU INDIA PRIVATE LIMITED',
+                        style: pw.TextStyle(
+                          fontSize: 18,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.SizedBox(height: 5),
+                      pw.Text(
+                        'Test Report For Charger',
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                        ),
+                      ),
+                    ]),
+              ),
+              pw.Divider(thickness: 2),
+
+              // Engineer Details Section
+              pw.Container(
+                padding: pw.EdgeInsets.symmetric(vertical: 10),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text(
-                        '${chargerId}_test_report.pdf'),
-                    pw.Text('BRIGHTBLU INDIA PRIVATE LIMITED'),
+                      'Engineer Details',
+                      style: pw.TextStyle(
+                        fontSize: 18,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Row(
+                      // Removed MainAxisAlignment.spaceBetween for alignment
+                      children: [
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text('Test Engineer Name: '),
+                            pw.Text('Date & Time: '),
+                          ],
+                        ),
+                        pw.SizedBox(width: 20),
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(engineername),
+                            pw.Text(dateTime), // Combined date and time
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
               pw.Divider(),
-              pw.Header(level: 1, text: 'Engineer Details'),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('Test Engineer Name: '),
-                      pw.Text('Date : '),
-                      // pw.Text('Site Name: '),
-                      // pw.Text('City: '),
-                      // pw.Text('State: '),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(engineername),
-                      pw.Text(dateTime),
-                      // pw.Text('The Fern Leo Beach Resort, Madhavpur'),
-                      // pw.Text('Madhavpur'),
-                      // pw.Text('Gujarat'),
-                    ],
-                  ),
-                ],
+
+              // Charger Static Details Section
+              pw.Container(
+                padding: pw.EdgeInsets.symmetric(vertical: 10),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'Charger Details',
+                      style: pw.TextStyle(
+                        fontSize: 18,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Row(
+                      children: [
+                        pw.Column(
+                            // Labels Column
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text('Charger ID: '),
+                              pw.Text('Firmware Version: '),
+                              pw.Text('Charger Type: '),
+                            ]),
+                        pw.SizedBox(width: 20),
+                        pw.Column(
+                            // Values Column
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(chargerId),
+                              pw.Text(firmwareVersion),
+                              pw.Text(chargerType),
+                            ]),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               pw.Divider(),
-              pw.Header(level: 1, text: 'Charger Details'),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('Charger Id: '),
-                      pw.Text('Voltage: '),
-                      pw.Text('Power: '),
-                      pw.Text('Energy: '),
-                      pw.Text('Current: '),
-                      // pw.Text('RTC Time: '),
-                      // pw.Text(': '),
-                      // pw.Text('Network (SIM/Wifi): '),
-                      // pw.Text('SIM Provider : '),
-                      // pw.Text('CPO Charger ID: '),
-                      // pw.Text('Not OK Ticket ID:'),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(chargerId),
-                      pw.Text(voltage),
-                      pw.Text(power),
-                      pw.Text(energy),
-                      pw.Text(current),
-                      // pw.Text(rtcTime),
 
-                      // pw.Text('Sep-25'),
-                      // pw.Text('1P07S06230060'),
-                      // pw.Text('SIM'),
-                      // pw.Text('Airtel'),
-                      // pw.Text('INCNDMADP0002'),
-                      // pw.Text(''),
-                    ],
-                  ),
-                ],
+              // Bluetooth Testing Section
+              pw.Container(
+                padding: pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.blue),
+                  borderRadius: pw.BorderRadius.circular(5),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text(
+                          'Bluetooth Testing',
+                          style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.blue,
+                          ),
+                        ),
+                        pw.Text(
+                          'Test Time: $bluetoothTestTime',
+                          style: pw.TextStyle(
+                            color: PdfColors.grey700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Text('Measurements at End of Test:',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(height: 5),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text('Voltage: $btVoltage'),
+                        pw.Text('Current: $btCurrent'),
+                      ],
+                    ),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text('Power: $btPower'),
+                        pw.Text('Energy: $btEnergy'),
+                      ],
+                    ),
+                    // pw.SizedBox(height: 15), // Space before new section
+                    // pw.Text('Test Parameters:', // Added heading
+                    //     style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    // pw.SizedBox(height: 5),
+                    // pw.Text('- Remote Start'), // Added parameter
+                    // pw.Text('- Remote Stop'), // Added parameter
+                  ],
+                ),
               ),
-              // Add remaining sections and data as needed
+              pw.SizedBox(height: 20),
+
+              // WiFi Testing Section
+              pw.Container(
+                padding: pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.green),
+                  borderRadius: pw.BorderRadius.circular(5),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text(
+                          'WiFi Testing',
+                          style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.green,
+                          ),
+                        ),
+                        pw.Text(
+                          'Test Time: $wifiTestTime',
+                          style: pw.TextStyle(
+                            color: PdfColors.grey700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Text('Measurements at End of Test:',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(height: 5),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text('Voltage: $wifiVoltage'),
+                        pw.Text('Current: $wifiCurrent'),
+                      ],
+                    ),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text('Power: $wifiPower'),
+                        pw.Text('Energy: $wifiEnergy'),
+                      ],
+                    ),
+                    // pw.SizedBox(height: 15), // Space before new section
+                    // pw.Text('Test Parameters:', // Added heading
+                    //     style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    // pw.SizedBox(height: 5),
+                    // pw.Text('- Remote Start'), // Added parameter
+                    // pw.Text('- Remote Stop'), // Added parameter
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              // ... (RFID Testing Section and Footer remain the same)
+              // RFID Testing Section - MODIFIED
+              pw.Container(
+                padding: pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.orange),
+                  borderRadius: pw.BorderRadius.circular(5),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // Moved Heading Inside
+                    pw.Text(
+                      'RFID Testing',
+                      style: pw.TextStyle(
+                        fontSize: 18,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.orange800,
+                      ),
+                    ),
+                    pw.SizedBox(height: 15),
+
+                    // --- RFID Card 1 Results ---
+                    pw.Text('RFID Card 1',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(height: 5),
+                    // pw.Text('Test Time: $rfidTestTime1',
+                    //     style: pw.TextStyle(color: PdfColors.grey700)),
+                    // pw.SizedBox(height: 5),
+                    // REMOVED Measurement lines for RFID
+                    pw.Row(children: [
+                      pw.Text('Status: ',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(
+                          rfidTestResults['RFID Card 1']?['status'] ?? 'N/A',
+                          style: pw.TextStyle(
+                              color: (rfidTestResults['RFID Card 1']
+                                              ?['status'] ??
+                                          '') ==
+                                      'PASS'
+                                  ? PdfColors.green
+                                  : PdfColors.red,
+                              fontWeight: pw.FontWeight.bold)),
+                    ]),
+                    pw.Row(children: [
+                      pw.Text('Remarks: ',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(
+                          rfidTestResults['RFID Card 1']?['remarks'] ?? 'N/A'),
+                    ]),
+                    pw.SizedBox(height: 15),
+
+                    // --- RFID Card 2 Results ---
+                    pw.Text('RFID Card 2',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(height: 5),
+                    // pw.Text('Test Time: $rfidTestTime2',
+                    //     style: pw.TextStyle(color: PdfColors.grey700)),
+                    // pw.SizedBox(height: 5),
+                    // REMOVED Measurement lines for RFID
+                    pw.Row(children: [
+                      pw.Text('Status: ',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(
+                          rfidTestResults['RFID Card 2']?['status'] ?? 'N/A',
+                          style: pw.TextStyle(
+                              color: (rfidTestResults['RFID Card 2']
+                                              ?['status'] ??
+                                          '') ==
+                                      'PASS'
+                                  ? PdfColors.green
+                                  : PdfColors.red,
+                              fontWeight: pw.FontWeight.bold)),
+                    ]),
+                    pw.Row(children: [
+                      pw.Text('Remarks: ',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(
+                          rfidTestResults['RFID Card 2']?['remarks'] ?? 'N/A'),
+                    ]),
+                  ],
+                ),
+              ),
+
+              // Footer
+              pw.Container(
+                  alignment: pw.Alignment.centerRight,
+                  margin: pw.EdgeInsets.only(top: 30),
+                  child: pw.Text(
+                      "Generated on: ${DateTime.now().toLocal().toString().split(' ')[0]}")),
             ];
           },
         ),
@@ -1605,14 +1825,10 @@ class Controller extends GetxController {
               "${(await getApplicationDocumentsDirectory()).path}/${chargerId}_test_report.pdf")
           .writeAsBytes(bytes);
       final xFile = XFile(file.path);
-      // final file = XFile.fromData(bytes,
-      //     path: "${(await getApplicationDocumentsDirectory()).path}/myPdf.pdf");
-
-      // // await file.writeAsBytes();
-
       await Share.shareXFiles([xFile]);
     } catch (e) {
       debugPrint("------ error in pdf generation ----- ${e.toString()}");
+      Fluttertoast.showToast(msg: "Error generating PDF: ${e.toString()}");
     }
   }
 }

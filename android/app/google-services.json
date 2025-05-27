@@ -67,6 +67,14 @@
           }
         },
         {
+          "client_id": "839461485346-i75sv8nk9pas97afheuq9potiunuagnq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brightblu.bbjoltlite",
+            "certificate_hash": "f597c2c4120c8158363d830f9336a333de05803c"
+          }
+        },
+        {
           "client_id": "839461485346-o00ttop2npv0j2mv6r2csvj54qbp93ns.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

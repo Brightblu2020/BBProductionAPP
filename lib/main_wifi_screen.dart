@@ -2,7 +2,7 @@ import 'package:bb_factory_test_app/controller/charger_controller.dart';
 import 'package:bb_factory_test_app/controller/controller.dart';
 import 'package:bb_factory_test_app/models/bluetooth_model_new.dart';
 import 'package:bb_factory_test_app/repository/charger_ble_repository.dart';
-import 'package:bb_factory_test_app/screen2.dart';
+import 'package:bb_factory_test_app/bluetooth_test_screen.dart';
 import 'package:bb_factory_test_app/utils/constants.dart';
 import 'package:bb_factory_test_app/utils/enums/charger_status.dart';
 import 'package:bb_factory_test_app/utils/enums/store_state.dart';
@@ -25,7 +25,7 @@ class _MainWifiScreenState extends State<MainWifiScreen> {
   final chargerController = Get.put(ChargerController());
 
   final bleRepository = ChargerBLERepository();
-bool start = false;
+  bool start = false;
   remoteStartStop() async {
     // final statusNotificationResp = await bleRepository
     //             .triggerStatusNotification(bluetoothModel: bluetoothModel.value);
@@ -166,7 +166,6 @@ bool start = false;
                     size: 23,
                   ),
                 ),
-               
               ],
             ),
           ),
@@ -281,11 +280,18 @@ bool start = false;
                     // await controller.connectCharger(
                     //   device: list[index].device,
                     // );
-                    // await controller.connectCharger(device: list[index].device);
                     await chargerController.connectToChargerViaBLE(
                         device: list[index].device);
+                    await controller.connectCharger(device: list[index].device);
+
                     // remoteStartStop();
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BluetoothTest(chargerId: list[index].device.advName.toString(),)));
+                    // Navigator.pushReplacement(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => BluetoothTest(
+                    //               chargerId:
+                    //                   list[index].device.advName.toString(),
+                    //             )));
                   },
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.resolveWith(

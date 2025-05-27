@@ -55,6 +55,7 @@ dependencies:
   flutter_isolate: ^2.1.0
   cached_network_image: ^3.4.1
   shared_preferences: ^2.5.2
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -82,7 +83,7 @@ flutter:
   assets:
     - assets/
     - assets/images/
-
+    - assets/.env
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

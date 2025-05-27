@@ -125,7 +125,7 @@ class ChargerController extends GetxController {
     chargerId: "",
     userId: "",
     // remoteId: "",
-).obs;
+  ).obs;
 
   /// [ChargerRealTimeModel] to store all charger reatime data
   final chargerRealtimeModel = ChargerRealTimeModel(
@@ -1893,7 +1893,7 @@ class ChargerController extends GetxController {
       // if the RFID is not present
       if (index == -1) {
         if (!model.id.startsWith("BB")) {
-          addRfidTagName(rfid: model, index: index);
+          // addRfidTagName(rfid: model, index: index); // Commented out call
         }
         // else{
 
@@ -3654,7 +3654,7 @@ class ChargerController extends GetxController {
 
     final model = await firebaseRepository.getLastTransaction(
         chargerId: chargerModel.value.chargerId);
-print("Model : $model");
+    print("Model : $model");
     if (model != null) {
       /// Writing Last Transaction to Hive
       await hiveBox.writeToDB(

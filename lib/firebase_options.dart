@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
 /// Example:
@@ -49,13 +51,12 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA2tkOep5tpdUuE3qQdtHtE3gqcua9Xwrg',
-    appId: '1:839461485346:android:be4011fe8912f4ec21437b',
-    messagingSenderId: '1008703860168',
-    projectId: 'brightblu-jolt-lite',
-    databaseURL:
-        'https://brightblu-jolt-lite-default-rtdb.asia-southeast1.firebasedatabase.app',
+  static final FirebaseOptions android = FirebaseOptions(
+    apiKey: dotenv.env['apiKey']!,
+    appId: dotenv.env['appId']!,
+    messagingSenderId: dotenv.env['messagingSenderId']!,
+    projectId: dotenv.env['projectId']!,
+    databaseURL: dotenv.env['databaseURL']!,
     // storageBucket: 'comissioningappbrightblu.appspot.com',
   );
 
@@ -67,5 +68,4 @@ class DefaultFirebaseOptions {
   //   storageBucket: 'comissioningappbrightblu.appspot.com',
   //   iosBundleId: 'com.example.joltCommission',
   // );
-
 }
