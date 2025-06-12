@@ -1,8 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:bb_factory_test_app/controller/charger_controller.dart';
 import 'package:bb_factory_test_app/controller/controller.dart';
 import 'package:bb_factory_test_app/models/bluetooth_model_new.dart';
+import 'package:bb_factory_test_app/models/charger_model.dart';
 import 'package:bb_factory_test_app/repository/charger_ble_repository.dart';
 import 'package:bb_factory_test_app/bluetooth_test_screen.dart';
+import 'package:bb_factory_test_app/services/ble_service.dart';
 import 'package:bb_factory_test_app/utils/constants.dart';
 import 'package:bb_factory_test_app/utils/enums/charger_status.dart';
 import 'package:bb_factory_test_app/utils/enums/store_state.dart';
@@ -23,6 +28,8 @@ class MainWifiScreen extends StatefulWidget {
 
 class _MainWifiScreenState extends State<MainWifiScreen> {
   final chargerController = Get.put(ChargerController());
+  final BleService _bleService = BleService();
+  StreamSubscription<List<int>>? _bootResponseSubscription;
 
   final bleRepository = ChargerBLERepository();
   bool start = false;
@@ -283,7 +290,103 @@ class _MainWifiScreenState extends State<MainWifiScreen> {
                     await chargerController.connectToChargerViaBLE(
                         device: list[index].device);
                     await controller.connectCharger(device: list[index].device);
+//                     await _bleService.connectToDevice(list[index].device);
+//                     await _bleService.sendBootNotification();
+// // Listen for response
+//                     _bootResponseSubscription =
+//                         _bleService.responseStream.listen(
+//                       (response) async {
+//                         try {
+//                           // Cancel the subscription immediately after receiving the first response
+//                           await _bootResponseSubscription?.cancel();
+//                           _bootResponseSubscription = null;
 
+//                           // Close the connecting dialog
+//                           if (mounted && Navigator.canPop(context)) {
+//                             // Navigator.of(context).pop();
+//                           }
+
+//                           // Parse the response
+//                           final responseStr = String.fromCharCodes(response);
+//                           print('Received boot response: $responseStr');
+
+//                           // Parse the JSON response
+//                           List<dynamic> responseData = jsonDecode(responseStr);
+//                           if (responseData.length >= 2 &&
+//                               responseData[0] == "BootNotification" &&
+//                               responseData[1] is Map) {
+//                             Map<String, dynamic> info = responseData[1];
+//                             final charger = ChargerModel.fromBLE(
+//                               chargerId: list[index].device.advName.toString(),
+//                               phase: info['phase']
+//                                   as String?, // Assuming 'phase' key exists
+//                               connector: double.tryParse(info['connectors']
+//                                   .toString()), // Assuming 'connectors' key exists
+//                               firmware: (info['chargePointFirmwareVersion'] ??
+//                                       info['FirmwareVersion'])
+//                                   as String?, // Assuming firmware keys exist
+//                               joltType: info['chargePointModel']
+//                                   as String?, // Assuming 'chargePointModel' key exists
+//                             );
+
+//                             if (!mounted) return;
+
+//                             // Determine charger type based on firmware
+//                             final firmwareVersion = charger.firmware ?? '';
+//                             String chargerType = "Unknown";
+
+//                             if (firmwareVersion.startsWith("4.0") ||
+//                                 firmwareVersion.startsWith("5.0")) {
+//                               chargerType = "Jolt Business";
+//                             } else if (firmwareVersion.startsWith("BBJLv1.")) {
+//                               chargerType = "Jolt Home";
+//                             } else if (firmwareVersion.startsWith("4.1") ||
+//                                 firmwareVersion.startsWith("5.1")) {
+//                               chargerType = "Jolt Home Plus";
+//                             }
+
+//                             print(
+//                                 'Detected Charger Type: $chargerType (Firmware: $firmwareVersion)');
+
+//                             // Navigate based on charger type
+//                             Navigator.pushReplacement(
+//                                 context,
+//                                 MaterialPageRoute(
+//                                     builder: (context) => BluetoothTest(
+//                                           chargerId: list[index]
+//                                               .device
+//                                               .advName
+//                                               .toString(),
+//                                         )));
+//                           } else {
+//                             if (!mounted) return;
+//                             setState(() {
+//                               // _errorMessage = 'Invalid response format from device';
+//                               Fluttertoast.showToast(
+//                                   msg: 'Invalid response format from device');
+//                             });
+//                           }
+//                         } catch (e) {
+//                           if (!mounted) return;
+//                           setState(() {
+//                             // _errorMessage = 'Error processing device response: $e';
+//                             Fluttertoast.showToast(
+//                                 msg:
+//                                     'Error processing device response: ${e.toString()}');
+//                           });
+//                         }
+//                       },
+//                       onError: (error) {
+//                         // Close the connecting dialog
+//                         if (mounted && Navigator.canPop(context)) {
+//                           Navigator.of(context).pop();
+//                         }
+
+//                         setState(() {
+//                           // _errorMessage = 'Error receiving response: $error';
+//                         });
+//                       },
+//                     );
                     // remoteStartStop();
                     // Navigator.pushReplacement(
                     //     context,

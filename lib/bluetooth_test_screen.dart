@@ -832,44 +832,78 @@ class _BluetoothTestState extends State<BluetoothTest> {
                       ),
                     ),
                   ),
-                  _buildBluetoothTestCard(context),
-                  Obx(() {
-                    if (isBtToWifiCountdownRunning.value) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 20.0, horizontal: 16.0),
-                        child: Column(
-                          children: [
-                            LinearProgressIndicator(
-                              value: (15 - btToWifiCountdown.value) / 15.0,
-                              minHeight: 6,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              "Switching to WiFi in ${btToWifiCountdown.value}s...",
-                              style: textTheme.titleMedium
-                                  ?.copyWith(color: colorScheme.primary),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      );
-                    } else if (testingStatus.value && !isWifiConnected.value) {
-                      return const SizedBox(height: 20);
-                    } else {
-                      return const SizedBox.shrink();
-                    }
-                  }),
-                  Obx(() => isWifiConnected.value
-                      ? _buildWifiTestCard(context)
-                      : const SizedBox.shrink()),
-                  Obx(() => isWifiTestingFinished.value && rfidAddStep.value < 2
-                      ? _buildRfidAddCard(context)
-                      : const SizedBox.shrink()),
-                  Obx(() =>
-                      rfidAddStep.value == 2 && !isRfidTestingFinished.value
-                          ? _buildRfidTestCard(context)
-                          : const SizedBox.shrink()),
+                  // Only show test cards if NOT Jolt Business
+                  if (_getChargerTypeString() != "Jolt Business") ...[
+                    _buildBluetoothTestCard(context),
+                    Obx(() {
+                      if (isBtToWifiCountdownRunning.value) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 20.0, horizontal: 16.0),
+                          child: Column(
+                            children: [
+                              LinearProgressIndicator(
+                                value: (15 - btToWifiCountdown.value) / 15.0,
+                                minHeight: 6,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Switching to WiFi in ${btToWifiCountdown.value}s...",
+                                style: textTheme.titleMedium
+                                    ?.copyWith(color: colorScheme.primary),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        );
+                      } else if (testingStatus.value &&
+                          !isWifiConnected.value) {
+                        return const SizedBox(height: 20);
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    }),
+                    Obx(() => isWifiConnected.value
+                        ? _buildWifiTestCard(context)
+                        : const SizedBox.shrink()),
+                    Obx(() =>
+                        isWifiTestingFinished.value && rfidAddStep.value < 2
+                            ? _buildRfidAddCard(context)
+                            : const SizedBox.shrink()),
+                    Obx(() =>
+                        rfidAddStep.value == 2 && !isRfidTestingFinished.value
+                            ? _buildRfidTestCard(context)
+                            : const SizedBox.shrink()),
+                  ],
+                  // Add specific tests for Jolt Business here
+                  if (_getChargerTypeString() == "Jolt Business") ...[
+                    FutureBuilder<void>(
+                      future: _configureWifiForBusiness(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text(
+                              'Error configuring WiFi: ${snapshot.error}');
+                        } else {
+                          // Check the boolean result from _configureWifiForBusiness
+                          final bool? configSuccess = snapshot.data as bool?;
+                          if (configSuccess == true) {
+                            // Call softReset() if WiFi configuration was accepted
+                            // chargerController.resetCharger(type: "Wifi");
+                            return const Text(
+                                'WiFi Configuration Accepted. Performing Soft Reset...');
+                          } else if (configSuccess == false) {
+                            return const Text('WiFi Configuration Rejected.');
+                          } else {
+                            return const Text(
+                                'WiFi Configuration Attempted.'); // Handle null case
+                          }
+                        }
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 20),
                 ],
               ),
@@ -880,11 +914,11 @@ class _BluetoothTestState extends State<BluetoothTest> {
 
   String _getChargerTypeString() {
     final firmware = chargerController.chargerModel.value.firmware ?? '';
-    if (firmware.startsWith("v4.0") || firmware.startsWith("v5.0")) {
+    if (firmware.startsWith("4.0") || firmware.startsWith("5.0")) {
       return "Jolt Business";
     } else if (firmware.startsWith("BBJLv1.")) {
       return "Jolt Home";
-    } else if (firmware.startsWith("v4.1") || firmware.startsWith("v5.1")) {
+    } else if (firmware.startsWith("4.1") || firmware.startsWith("5.1")) {
       return "Jolt Home Plus";
     } else {
       return "Unknown (${firmware.isNotEmpty ? firmware : 'N/A'})";
@@ -1397,5 +1431,31 @@ class _BluetoothTestState extends State<BluetoothTest> {
         ),
       ],
     );
+  }
+
+  // New function to handle WiFi configuration for Jolt Business
+  Future<bool?> _configureWifiForBusiness() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? ssid = prefs.getString(wifiSsidKey);
+    final String? password = prefs.getString(wifiPasswordKey);
+
+    if (ssid == null || ssid.isEmpty) {
+      Fluttertoast.showToast(
+          msg:
+              "Error: Saved WiFi SSID not found. Cannot configure WiFi for Jolt Business.",
+          toastLength: Toast.LENGTH_LONG);
+      return false; // Return false if credentials not found
+    }
+
+    // Call the new method in Controller to change wifi details
+    final bool? configAccepted = await controller.changeWifiDetailsInRepo(
+      username: ssid,
+      password: password ?? "",
+    );
+
+    // The changeWifiDetailsInRepo function already shows a toast message
+    // based on the response, so no extra toast here.
+
+    return configAccepted; // Return the result of the configuration attempt
   }
 }

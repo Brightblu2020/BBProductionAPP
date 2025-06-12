@@ -27,8 +27,8 @@ class DefaultFirebaseOptions {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
-      // case TargetPlatform.iOS:
-      //   return ios;
+      case TargetPlatform.iOS:
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -60,12 +60,12 @@ class DefaultFirebaseOptions {
     // storageBucket: 'comissioningappbrightblu.appspot.com',
   );
 
-  // static const FirebaseOptions ios = FirebaseOptions(
-  //   apiKey: 'AIzaSyBymfYgyowS-nAL7osowFCVaYp_TCYb2bo',
-  //   appId: '1:124147164931:ios:f44afc48808bcb219a2b36',
-  //   messagingSenderId: '124147164931',
-  //   projectId: 'comissioningappbrightblu',
-  //   storageBucket: 'comissioningappbrightblu.appspot.com',
-  //   iosBundleId: 'com.example.joltCommission',
-  // );
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyBymfYgyowS-nAL7osowFCVaYp_TCYb2bo',
+    appId: '1:124147164931:ios:f44afc48808bcb219a2b36',
+    messagingSenderId: '124147164931',
+    projectId: 'comissioningappbrightblu',
+    storageBucket: 'comissioningappbrightblu.appspot.com',
+    iosBundleId: 'com.example.joltCommission',
+  );
 }

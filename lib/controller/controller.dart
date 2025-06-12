@@ -774,7 +774,7 @@ class Controller extends GetxController {
       debugPrint("----------- Wifi configuration accepted --------------");
       Fluttertoast.showToast(msg: "Wifi configuration accepted");
     }
-    Get.back();
+    // Get.back();
     configureState.value = StoreState.SUCCESS;
   }
 
@@ -1830,5 +1830,17 @@ class Controller extends GetxController {
       debugPrint("------ error in pdf generation ----- ${e.toString()}");
       Fluttertoast.showToast(msg: "Error generating PDF: ${e.toString()}");
     }
+  }
+
+  // New method to expose repository.changeWifiDetails
+  Future<bool?> changeWifiDetailsInRepo({
+    required String username,
+    required String password,
+  }) async {
+    return await repository.changeWifiDetails(
+      username: username,
+      password: password,
+      model: bluetoothModel.value,
+    );
   }
 }

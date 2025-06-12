@@ -3,18 +3,30 @@ import 'package:bb_factory_test_app/hive/hive.dart';
 import 'package:bb_factory_test_app/home.dart';
 import 'package:bb_factory_test_app/utils/hive.dart';
 import 'package:bb_factory_test_app/wifi_credential_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class AuthService {
+  static Future<void> signInAnonymously() async {
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+      print("Signed in anonymously");
+    } catch (e) {
+      print("Error signing in anonymously: $e");
+    }
+  }
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: "assets/.env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+  await AuthService.signInAnonymously();
   await Storage().init();
   await HiveBox().init();
 

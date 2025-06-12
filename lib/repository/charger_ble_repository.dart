@@ -157,7 +157,9 @@ class ChargerBLERepository {
 
     return null;
   }
-  Future<ChargerModel?> boot({required BluetoothModelNew bluetoothModel}) async {
+
+  Future<ChargerModel?> boot(
+      {required BluetoothModelNew bluetoothModel}) async {
     try {
       final resp = await getBLEResponse(
         message:
@@ -692,7 +694,8 @@ class ChargerBLERepository {
     return result;
   }
 
-  Future<int> getWifiConnectionStatus({required BluetoothModelNew model}) async {
+  Future<int> getWifiConnectionStatus(
+      {required BluetoothModelNew model}) async {
     try {
       final resp = await getBLEResponse(
         message:
@@ -888,7 +891,8 @@ class ChargerBLERepository {
     required String message,
     required ESPFUNCTIONS bleResponse,
     required BluetoothModelNew bluetoothModel,
-    int? noOfpackets,
+    int?
+        noOfpackets, // This parameter is now optional and not used for completion detection
   }) async {
     final result = <String, dynamic>{};
     if (bluetoothModel.writeCharacterstic != null) {
@@ -900,12 +904,13 @@ class ChargerBLERepository {
       } catch (e) {
         debugPrint("------ BLE response error ----- ${e.toString()}");
       }
+
       try {
         final completer = Completer<String>();
         String res = "";
-        int packets = noOfpackets ?? 1;
+
         final subscription = bluetoothModel.readCharacterstic!.onValueReceived
-            .timeout(const Duration(seconds: 10), onTimeout: (data) {
+            .timeout(const Duration(seconds: 20), onTimeout: (data) {
           data.close();
           debugPrint("---- ble reponse timeout ----");
           completer.complete("");
@@ -919,16 +924,23 @@ class ChargerBLERepository {
             if (bleMessage.isNotEmpty) {
               print("bleMessage is not empty : $bleMessage");
 
+              // Add the new chunk to our buffer
               res += bleMessage;
-              packets--;
+
+              // Check if we have a complete JSON packet (ends with }])
+              if (_isJsonPacketComplete(res)) {
+                debugPrint("Complete JSON packet detected: $res");
+                completer.complete(res);
+              }
             }
-            if (packets <= 0) completer.complete(res);
           } else {
             debugPrint("error in data $message");
           }
         });
+
         res = await completer.future;
         await subscription.cancel();
+
         if (res.isNotEmpty) {
           result
             ..clear()
@@ -937,33 +949,133 @@ class ChargerBLERepository {
       } catch (e) {
         debugPrint('Stream empty $e');
       }
+
       // debugPrint("---- map data added --- $result");
       return result;
     }
     return {};
   }
 
+  /// Check if the JSON packet is complete by detecting }] at the end
+  bool _isJsonPacketComplete(String data) {
+    try {
+      // Trim whitespace and check if ends with }]
+      String trimmed = data.trim();
+
+      // Basic check for JSON array completion
+      if (!trimmed.endsWith('}]')) {
+        return false;
+      }
+
+      // Additional validation: try to parse as JSON to ensure it's valid
+      try {
+        jsonDecode(trimmed);
+        return true;
+      } catch (e) {
+        // If JSON parsing fails, the packet might be incomplete
+        debugPrint("JSON parsing failed, packet might be incomplete: $e");
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Error checking packet completion: $e");
+      return false;
+    }
+  }
+
   Map<String, dynamic> _processBLEData(
       {required String data, required ESPFUNCTIONS bleFuntion}) {
     try {
-      String processOutput = data;
+      String processOutput = data.trim(); // Trim any whitespace
       print("processOutput - $processOutput");
+
       final result = jsonDecode(processOutput);
       debugPrint(
           "----- processedOutput : ${result.runtimeType}  ------ ${result[0]}");
+
       if (getESPNotifications(result[0] as String) == bleFuntion) {
         print("Inside if getESPNotifications - $result");
-
         return result[1] as Map<String, dynamic>;
-        // return result;
+      } else {
+        print("Inside else getESPNotifications - $result");
       }
     } catch (e) {
       debugPrint("------ processOutput exception --- ${e.toString()}");
+      debugPrint("------ problematic data --- $data");
     }
 
     return {};
   }
-Future<HashMap<String, OCPPConfigModel>?> getOCPPConfigDetails(
+
+// Alternative version with more robust JSON validation
+  bool _isJsonPacketCompleteRobust(String data) {
+    String trimmed = data.trim();
+
+    // Quick check for basic structure
+    if (!trimmed.startsWith('[') || !trimmed.endsWith('}]')) {
+      return false;
+    }
+
+    // Count brackets to ensure they're balanced
+    int squareBrackets = 0;
+    int curlyBrackets = 0;
+    bool inString = false;
+    bool escaped = false;
+
+    for (int i = 0; i < trimmed.length; i++) {
+      String char = trimmed[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char == '\\') {
+        escaped = true;
+        continue;
+      }
+
+      if (char == '"') {
+        inString = !inString;
+        continue;
+      }
+
+      if (!inString) {
+        switch (char) {
+          case '[':
+            squareBrackets++;
+            break;
+          case ']':
+            squareBrackets--;
+            break;
+          case '{':
+            curlyBrackets++;
+            break;
+          case '}':
+            curlyBrackets--;
+            break;
+        }
+      }
+    }
+
+    // Check if brackets are balanced and we end with proper structure
+    bool balanced = squareBrackets == 0 && curlyBrackets == 0;
+    bool endsCorrectly = trimmed.endsWith('}]');
+
+    if (balanced && endsCorrectly) {
+      // Final validation: try to parse as JSON
+      try {
+        jsonDecode(trimmed);
+        return true;
+      } catch (e) {
+        debugPrint("JSON validation failed: $e");
+        return false;
+      }
+    }
+
+    return false;
+  }
+
+  Future<HashMap<String, OCPPConfigModel>?> getOCPPConfigDetails(
       {required BluetoothModelNew model}) async {
     try {
       final map = HashMap<String, OCPPConfigModel>();
@@ -989,6 +1101,7 @@ Future<HashMap<String, OCPPConfigModel>?> getOCPPConfigDetails(
 
     return null;
   }
+
   Future<bool> addRFIDTag({
     required BluetoothModelNew model,
   }) async {
@@ -1045,7 +1158,8 @@ Future<HashMap<String, OCPPConfigModel>?> getOCPPConfigDetails(
     return false;
   }
 
-  Future<int?> getChargingTime({required BluetoothModelNew bluetoothModel}) async {
+  Future<int?> getChargingTime(
+      {required BluetoothModelNew bluetoothModel}) async {
     try {
       final resp = await getBLEResponse(
         message: '["TriggerMessage",{"requestedMessage":"chargingTimer"}]',

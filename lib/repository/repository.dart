@@ -46,9 +46,14 @@ class Repository {
   Function(BluetoothDevice device)? _onDeviceConnected;
   Function(BluetoothCharacteristic characteristic)? _onLogCharacteristicFound;
 
-  // Getter and setter for `onDeviceConnected`
-  // Repository({this.connectedDevice, this.logCharacteristic});
+  // Add BleService members
+  BluetoothCharacteristic? rxCharacteristic;
+  BluetoothCharacteristic? txCharacteristic;
 
+  final StreamController<List<int>> _responseStreamController =
+      StreamController<List<int>>.broadcast();
+
+  // Getter and setter for `onDeviceConnected`
   Function(BluetoothDevice device)? get onDeviceConnected => _onDeviceConnected;
   set onDeviceConnected(Function(BluetoothDevice device)? callback) {
     _onDeviceConnected = callback;
@@ -601,10 +606,8 @@ class Repository {
 
         return result[1] as Map<String, dynamic>;
         // return result;
-      }
-      else{
+      } else {
         print("Inside else getESPNotifications - $result");
-
       }
     } catch (e) {
       debugPrint("------ processOutput exception --- ${e.toString()}");
@@ -742,9 +745,9 @@ class Repository {
   Future<List<ScanResult>> _filterBLEDevices(
       {required List<ScanResult> list}) async {
     final result = <ScanResult>[];
-  
+
     final alternateServiceUUID = Guid("fb1e4001-54ae-4a28-9f74-dfccb248601d");
-    final serviceUUID  = Guid("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+    final serviceUUID = Guid("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
     for (final model in list) {
       await model.device.discoverServices();
       final index = model.device.servicesList.indexWhere((element) =>
@@ -815,82 +818,75 @@ class Repository {
 
         /// Our required service
         int index = servicesList.indexWhere((element) =>
-            element.uuid.toString() ==
-            "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
+                element.uuid.toString() ==
+                "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
 
             // "fb1e4001-54ae-4a28-9f74-dfccb248601d"
             );
         print("Index 1 - $index");
         if (index == -1) {
           index = servicesList.indexWhere((element) =>
-                  element.uuid.toString() ==
-                  // "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
+              element.uuid.toString() ==
+              // "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
               // "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-              "fb1e4001-54ae-4a28-9f74-dfccb248601d"
-              );
+              "fb1e4001-54ae-4a28-9f74-dfccb248601d");
         }
 
         if (index == -1) return null;
 
         /// Index of our read characterstic
-        int readIndex =
-            servicesList[index].characteristics.indexWhere((element) =>
+        int readIndex = servicesList[index].characteristics.indexWhere(
+            (element) =>
                 element.uuid.toString() ==
                 "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
-                // "fb1e4003-54ae-4a28-9f74-dfccb248601d"
-                );
-                print("Read index : $readIndex");
+            // "fb1e4003-54ae-4a28-9f74-dfccb248601d"
+            );
+        print("Read index : $readIndex");
 
         if (readIndex == -1) {
           print("If read index");
 
-          readIndex = servicesList[index].characteristics.indexWhere(
-              (element) =>
+          readIndex =
+              servicesList[index].characteristics.indexWhere((element) =>
                   element.uuid.toString() ==
-              //    "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
-              // "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-               "fb1e4003-54ae-4a28-9f74-dfccb248601d"
-              );
-
-      
+                  //    "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
+                  // "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+                  "fb1e4003-54ae-4a28-9f74-dfccb248601d");
         }
 
         /// Index of our write characterstic
-        int writeIndex =
-            servicesList[index].characteristics.indexWhere((element) =>
+        int writeIndex = servicesList[index].characteristics.indexWhere(
+            (element) =>
                 element.uuid.toString() ==
                 "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
-                // "fb1e4002-54ae-4a28-9f74-dfccb248601d"
-                );
-
+            // "fb1e4002-54ae-4a28-9f74-dfccb248601d"
+            );
 
         if (writeIndex == -1) {
           print("If write index");
-          writeIndex = servicesList[index].characteristics.indexWhere(
-              (element) =>
+          writeIndex =
+              servicesList[index].characteristics.indexWhere((element) =>
                   element.uuid.toString() ==
-                //  "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
-              // "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-               "fb1e4002-54ae-4a28-9f74-dfccb248601d"
-              );
-        } 
+                  //  "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
+                  // "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+                  "fb1e4002-54ae-4a28-9f74-dfccb248601d");
+        }
 
         // Index of our notify characterstic
-        int notifyIndex =
-            servicesList[index].characteristics.indexWhere((element) =>
+        int notifyIndex = servicesList[index].characteristics.indexWhere(
+            (element) =>
                 element.uuid.toString() ==
                 "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
-                // "fb1e4002-54ae-4a28-9f74-dfccb248601d"
-                );
+            // "fb1e4002-54ae-4a28-9f74-dfccb248601d"
+            );
 
         if (notifyIndex == -1) {
-          notifyIndex = servicesList[index].characteristics.indexWhere(
-              (element) =>
+          notifyIndex =
+              servicesList[index].characteristics.indexWhere((element) =>
                   element.uuid.toString() ==
                   // "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
-              // "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-              "fb1e4002-54ae-4a28-9f74-dfccb248601d"
-              );
+                  // "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+                  "fb1e4002-54ae-4a28-9f74-dfccb248601d");
         }
 
         if (readIndex == -1 || writeIndex == -1 || notifyIndex == -1)
@@ -1085,7 +1081,6 @@ class Repository {
         bleResponse: ESPFUNCTIONS.GET_CONFIGRATION,
         bluetoothModel: model,
         noOfpackets: 2,
-
       );
       // Fluttertoast.showToast(
       //     msg: "wifi response $resp", toastLength: Toast.LENGTH_LONG);
@@ -1413,7 +1408,7 @@ class Repository {
     return null;
   }
 
-   Future<String?> getTOTP({required BluetoothModel model}) async {
+  Future<String?> getTOTP({required BluetoothModel model}) async {
     try {
       final resp = await _getBLEResponse(
         message: '["GetConfiguration",{"key":"generateOTP"}]',
@@ -1822,5 +1817,28 @@ class Repository {
     }
 
     return null;
+  }
+
+  // Add the sendMessage function
+  Future<void> sendMessage(String command, Map<String, dynamic> params) async {
+    if (rxCharacteristic != null) {
+      try {
+        final message = [command, params];
+        final String jsonMessage = jsonEncode(message);
+        final List<int> bytes = utf8.encode(jsonMessage);
+
+        // Use the appropriate write method based on characteristic properties
+        if (rxCharacteristic!.properties.writeWithoutResponse) {
+          await rxCharacteristic!.write(bytes, withoutResponse: true);
+        } else {
+          await rxCharacteristic!.write(bytes);
+        }
+      } catch (e) {
+        print('Error sending message: $e');
+        rethrow;
+      }
+    } else {
+      throw Exception('RX Characteristic not found');
+    }
   }
 }
